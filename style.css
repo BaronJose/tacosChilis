@@ -164,7 +164,8 @@ header .sub {
 }
 
 .skeleton-image {
-    height: 180px;
+    /* --- MODIFIED --- */
+    aspect-ratio: 4 / 3; /* Replaced fixed height */
     margin-bottom: 12px;
     border-radius: 0;
 }
@@ -220,22 +221,24 @@ header .sub {
     overflow: hidden;
     padding: 0;
     position: relative; 
-    display: flex; /* Makes it stack like other cards */
+    display: flex; 
     flex-direction: column;
 }
 
 .group-image {
+    /* --- MODIFIED --- */
     width: 100%;
-    height: 200px;
+    height: auto; /* Let aspect-ratio control height */
+    aspect-ratio: 16 / 9; /* Replaced fixed height */
     object-fit: cover;
     display: block;
 }
 
 .group-content {
     padding: 16px;
-    display: flex; /* Added */
-    flex-direction: column; /* Added */
-    flex-grow: 1; /* Added */
+    display: flex;
+    flex-direction: column; 
+    flex-grow: 1; 
 }
 
 .group-title {
@@ -254,7 +257,7 @@ header .sub {
     color: var(--muted);
     border-bottom: 1px solid #eee;
     padding-bottom: 16px;
-    flex-grow: 1; /* Pushes list to the bottom */
+    flex-grow: 1; 
 }
 
 .group-item-list {
@@ -349,8 +352,9 @@ header .sub {
 }
 
 .menu-image {
+    /* --- MODIFIED --- */
     width: 100%;
-    height: 180px;
+    aspect-ratio: 4 / 3; /* Replaced fixed height */
     flex-shrink: 0;
     overflow: hidden;
     background: #f6f0e8;
@@ -358,7 +362,7 @@ header .sub {
 
 .menu-image img {
     width: 100%;
-    height: 100%;
+    height: 100%; /* Fills the aspect-ratio container */
     object-fit: cover;
     display: block;
     filter: saturate(1.1) contrast(1.05);
@@ -443,7 +447,7 @@ header .sub {
 /* --- 8. DESKTOP MEDIA QUERY --- */
 .is-desktop .category-content-wrapper {
     grid-template-columns: repeat(4, 1fr);
-    align-items: start;
+    align-items: start; /* Prevents cards from stretching */
 }
 
 .is-desktop .individual-item-grid {
@@ -469,6 +473,7 @@ header .sub {
 
 .is-desktop .skeleton-grid {
     grid-template-columns: repeat(4, 1fr);
+    align-items: start; /* Match the content grid */
 }
 
 /* --- 9. ANIMATIONS --- */

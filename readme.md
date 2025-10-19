@@ -63,3 +63,52 @@ This guide explains what each column in the Google Sheet does and how to fill it
 * **How to use:** This works for **both** types of items:
     * **For Individual Items:** Adds the badge to the main card.
     * **For Grouped Items:** Adds the badge next to the *specific item's name* inside the group list (e.g., "Tripa [Spicy]").
+
+## 📸 Image Guidelines
+
+There is no *exact* pixel size (like 800x600) required for the menu. The new CSS uses `aspect-ratio` and `object-fit: cover`, which means the **shape** of the image is more important than the exact size.
+
+The system will automatically scale and crop your images to fit the cards perfectly without stretching or distorting them.
+
+Here are the guidelines to follow for best results.
+
+### 1. Group Images (`GroupImage`)
+
+These are the main images for cards like "Street Tacos" or "Burritos".
+
+* **Aspect Ratio:** **16:9 (Widescreen)**
+* **Recommended Size:** A horizontal photo, like **1920x1080** pixels.
+* **Minimum Size:** At least 1280px wide.
+
+### 2. Individual Item Images (`Image`)
+
+These are for single-item cards like "Vampiro" or "Quesabirrias".
+
+* **Aspect Ratio:** **4:3 (Standard Photo)**
+* **Recommended Size:** A standard photo, like **1200x900** pixels.
+* **Minimum Size:** At least 800px wide.
+
+---
+
+### **CRITICAL RULE: Keep the Food in the Center!**
+
+Because the website automatically crops images to fit, the **edges of your photos will get cut off** on different screen sizes (mobile vs. desktop).
+
+Always make sure your main subject (the food) is in the **center 50%** of the frame.
+
+**Good Example:**
+
+*(The food is safe in the middle.)*
+
+**Bad Example:**
+
+*(The edges of the tacos will be cropped, which looks bad.)*
+
+### Summary
+
+| Column | Aspect Ratio | Good Example Size |
+| :--- | :--- | :--- |
+| **`GroupImage`** | 16:9 (Widescreen) | 1920 x 1080 px |
+| **`Image`** | 4:3 (Standard) | 1200 x 900 px |
+
+**Final Tip:** After uploading an image, save it using a free online tool like [TinyPNG](https://tinypng.com/) to make the file size smaller. This makes your menu load *much* faster.
