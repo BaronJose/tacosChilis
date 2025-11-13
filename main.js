@@ -2,7 +2,7 @@
 (function () {
     // --- CONFIGURATION ---
     const SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSvCiqSXwFy0Gi34bsv32U2vzn6dzXVbzaHbm6qxA-H2EegRqTG2m7JtmtMHHAW4toNWm0Qtd4wWRhm/pub?output=csv';
-    const placeholderImage = 'https://via.placeholder.com/400x300?text=Taco';
+    const placeholderImage = 'https://placehold.co/600?text=Image+Soon';
     const DESKTOP_BREAKPOINT = 769;
 
     // --- DOM ELEMENTS ---
@@ -14,6 +14,79 @@
     function escapeHtml(str) {
         if (!str) return '';
         return String(str).replace(/[&<>"]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[m]));
+    }
+
+    /**
+     * Creates a WebP-optimized picture element with fallback
+     * @param {string} imgSrc - Original image URL
+     * @param {string} alt - Alt text for the image
+     * @param {string} className - CSS class name
+     * @returns {string} HTML string for picture element
+     */
+    function createOptimizedImage(imgSrc, alt, className) {
+        if (!imgSrc || imgSrc === placeholderImage) {
+            // For placeholder, just return simple img tag
+            return `<img loading="lazy" src="${escapeHtml(imgSrc)}" alt="${escapeHtml(alt)}" class="${className}" onerror="this.onerror=null; this.src='${placeholderImage}'">`;
+        }
+
+        // Try to create WebP version URL by replacing extension
+        // Handles: .jpg, .jpeg, .JPG, .JPEG, .png, .PNG
+        const webpSrc = imgSrc.replace(/\.(jpg|jpeg|JPG|JPEG|png|PNG)(\?.*)?$/i, '.webp$2');
+        
+        // If URL already ends with .webp, just use it directly
+        if (imgSrc.toLowerCase().endsWith('.webp')) {
+            return `<img loading="lazy" src="${escapeHtml(imgSrc)}" alt="${escapeHtml(alt)}" class="${className}" onerror="this.onerror=null; this.src='${placeholderImage}'">`;
+        }
+
+        // Create picture element with WebP source and original fallback
+        // Browser automatically falls back to img if source fails
+        return `
+            <picture>
+                <source srcset="${escapeHtml(webpSrc)}" type="image/webp">
+                <img loading="lazy" src="${escapeHtml(imgSrc)}" alt="${escapeHtml(alt)}" class="${className}" onerror="this.onerror=null; this.src='${placeholderImage}'">
+            </picture>
+        `;
+    }
+
+    function showErrorState(error) {
+        let errorMessage = 'Unable to load the menu.';
+        let errorDetail = 'Please check your internet connection and try again.';
+        let errorType = 'network';
+
+        // Try to determine error type
+        if (error) {
+            const errorText = String(error).toLowerCase();
+            if (errorText.includes('parse') || errorText.includes('csv') || errorText.includes('format')) {
+                errorType = 'parsing';
+                errorMessage = 'Menu data format error.';
+                errorDetail = 'The menu data could not be read. Please contact us if this problem persists.';
+            } else if (errorText.includes('network') || errorText.includes('fetch') || errorText.includes('failed')) {
+                errorType = 'network';
+                errorMessage = 'Connection problem.';
+                errorDetail = 'Unable to reach the menu server. Please check your internet connection.';
+            }
+        }
+
+        const errorHtml = `
+            <div class="error-state">
+                <div class="error-icon">⚠️</div>
+                <h2 class="error-title">${escapeHtml(errorMessage)}</h2>
+                <p class="error-detail">${escapeHtml(errorDetail)}</p>
+                <button class="retry-btn" aria-label="Retry loading menu">
+                    <span class="retry-icon">↻</span>
+                    Try Again
+                </button>
+            </div>
+        `;
+        menuContainer.innerHTML = errorHtml;
+        
+        // Attach retry button event listener
+        const retryButton = menuContainer.querySelector('.retry-btn');
+        if (retryButton) {
+            retryButton.onclick = function() {
+                loadMenuData();
+            };
+        }
     }
 
     // --- CORE FUNCTIONS ---
@@ -34,13 +107,30 @@
             header: true,
             skipEmptyLines: true,
             complete: function (results) {
-                const processedData = processData(results.data);
-                renderMenu(processedData.categories);
-                setupAnnouncementRibbon(processedData.announcements);
-                updateLayout(true); 
+                // Check if we got valid data
+                if (!results.data || results.data.length === 0) {
+                    showErrorState(new Error('No menu data found'));
+                    return;
+                }
+                try {
+                    const processedData = processData(results.data);
+                    renderMenu(processedData.categories);
+                    setupAnnouncementRibbon(processedData.announcements);
+                    updateLayout(true);
+                    
+                    // Notify service worker to cache the CSV data
+                    if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+                        navigator.serviceWorker.controller.postMessage({
+                            type: 'CACHE_CSV',
+                            url: url
+                        });
+                    }
+                } catch (processingError) {
+                    showErrorState(new Error('Error processing menu data: ' + processingError.message));
+                }
             },
-            error: function () {
-                menuContainer.innerHTML = '<div style="color:red;text-align:center;padding:30px;">Error loading menu. Please try again.</div>';
+            error: function (error) {
+                showErrorState(error);
             }
         });
     }
@@ -118,7 +208,7 @@
                 const groupImgSrc = group.image || placeholderImage; 
 
                 html += `<div class="menu-group">`;
-                html += `<img loading="lazy" src="${escapeHtml(groupImgSrc)}" alt="${escapeHtml(groupName)}" class="group-image">`;
+                html += createOptimizedImage(groupImgSrc, groupName, 'group-image');
                 html += `<div class="group-content">`;
                 html += `<h3 class="group-title">${escapeHtml(groupName)}</h3>`;
                 html += `<p class="group-description">${escapeHtml(group.description)}</p>`;
@@ -158,7 +248,7 @@
 
                     html += `
                         <div class="menu-image">
-                            <img loading="lazy" src="${escapeHtml(imgSrc)}" alt="${escapeHtml(item.name)}">
+                            ${createOptimizedImage(imgSrc, item.name, 'menu-item-img')}
                         </div>
                         <div class="menu-card">
                             <div class="menu-top">
@@ -225,6 +315,54 @@
         menuContainer.classList.toggle('is-desktop', isDesktop);
     }
 
+    function showUpdateNotification() {
+        const notification = document.getElementById('updateNotification');
+        if (!notification) return;
+
+        // Show notification with animation
+        notification.style.display = 'block';
+        setTimeout(() => {
+            notification.classList.add('is-visible');
+        }, 10);
+
+        // Make notification clickable to refresh
+        const notificationContent = notification.querySelector('.update-notification-content');
+        if (notificationContent) {
+            notificationContent.onclick = function(e) {
+                // Don't refresh if clicking the close button
+                if (e.target.classList.contains('update-notification-close')) {
+                    return;
+                }
+                // Refresh the page to show new menu
+                window.location.reload();
+            };
+        }
+
+        // Close button handler
+        const closeBtn = notification.querySelector('.update-notification-close');
+        if (closeBtn) {
+            closeBtn.onclick = function(e) {
+                e.stopPropagation();
+                hideUpdateNotification();
+            };
+        }
+
+        // Auto-hide after 10 seconds
+        setTimeout(() => {
+            hideUpdateNotification();
+        }, 10000);
+    }
+
+    function hideUpdateNotification() {
+        const notification = document.getElementById('updateNotification');
+        if (!notification) return;
+
+        notification.classList.remove('is-visible');
+        setTimeout(() => {
+            notification.style.display = 'none';
+        }, 300); // Wait for fade-out animation
+    }
+
     function attachEventListeners() {
         // No longer needed
     }
@@ -247,5 +385,36 @@
     });
 
     document.addEventListener('DOMContentLoaded', loadMenuData);
+
+    // --- SERVICE WORKER REGISTRATION ---
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('/sw.js')
+                .then((registration) => {
+                    console.log('[Service Worker] Registered successfully:', registration.scope);
+                    
+                    // Check for updates periodically
+                    setInterval(() => {
+                        registration.update();
+                    }, 60 * 60 * 1000); // Check every hour
+                })
+                .catch((error) => {
+                    console.warn('[Service Worker] Registration failed:', error);
+                });
+
+            // Listen for service worker updates
+            navigator.serviceWorker.addEventListener('controllerchange', () => {
+                console.log('[Service Worker] New service worker activated');
+            });
+
+            // Listen for messages from service worker about cache updates
+            navigator.serviceWorker.addEventListener('message', (event) => {
+                if (event.data && event.data.type === 'CSV_UPDATED') {
+                    console.log('[Service Worker] CSV cache updated - new menu data available');
+                    showUpdateNotification();
+                }
+            });
+        });
+    }
 
 })();

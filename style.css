@@ -133,6 +133,105 @@ header .sub {
     opacity: 1;
 }
 
+/* --- UPDATE NOTIFICATION --- */
+.update-notification {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%) translateY(-100px);
+    z-index: 1000;
+    max-width: 90%;
+    width: 100%;
+    max-width: 500px;
+    opacity: 0;
+    transition: transform 0.3s ease-out, opacity 0.3s ease-out;
+    pointer-events: none;
+}
+
+.update-notification.is-visible {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.update-notification-content {
+    background: var(--accent-2);
+    color: #fff;
+    padding: 14px 20px;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+.update-notification-content:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.25);
+}
+
+.update-notification-icon {
+    font-size: 1.3rem;
+    animation: spin 2s linear infinite;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.update-notification-text {
+    flex: 1;
+    font-weight: 600;
+    font-size: 0.95rem;
+}
+
+.update-notification-close {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: #fff;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 1.2rem;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s ease;
+    flex-shrink: 0;
+    padding: 0;
+}
+
+.update-notification-close:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.update-notification-close:active {
+    transform: scale(0.95);
+}
+
+/* Mobile adjustments for update notification */
+@media (max-width: 768px) {
+    .update-notification {
+        top: 10px;
+        max-width: calc(100% - 20px);
+    }
+
+    .update-notification-content {
+        padding: 12px 16px;
+        font-size: 0.9rem;
+    }
+
+    .update-notification-text {
+        font-size: 0.85rem;
+    }
+}
+
 /* --- 3. SKELETON LOADER --- */
 .skeleton {
     background-color: #e0e0e0;
@@ -225,13 +324,20 @@ header .sub {
     flex-direction: column;
 }
 
-.group-image {
+.group-image,
+.menu-group picture {
     /* --- MODIFIED --- */
     width: 100%;
     height: auto; /* Let aspect-ratio control height */
     aspect-ratio: 16 / 9; /* Replaced fixed height */
-    object-fit: cover;
     display: block;
+}
+
+.group-image,
+.menu-group picture img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
 }
 
 .group-content {
@@ -360,16 +466,28 @@ header .sub {
     background: #f6f0e8;
 }
 
+.menu-image picture,
 .menu-image img {
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
+.menu-image picture {
+    aspect-ratio: 4 / 3;
+}
+
+.menu-image img,
+.menu-image .menu-item-img {
     width: 100%;
     height: 100%; /* Fills the aspect-ratio container */
     object-fit: cover;
-    display: block;
     filter: saturate(1.1) contrast(1.05);
     transition: transform 0.3s ease-out;
 }
 
-.menu-item:hover .menu-image img {
+.menu-item:hover .menu-image img,
+.menu-item:hover .menu-image picture img {
     transform: scale(1.1);
 }
 
@@ -442,6 +560,73 @@ header .sub {
 
 .site-footer a:hover {
     text-decoration: underline;
+}
+
+/* --- ERROR STATE --- */
+.error-state {
+    text-align: center;
+    padding: 60px 20px;
+    max-width: 500px;
+    margin: 40px auto;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.error-icon {
+    font-size: 4rem;
+    margin-bottom: 20px;
+    animation: pulse 2s ease-in-out infinite;
+}
+
+.error-title {
+    color: var(--accent);
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin: 0 0 12px 0;
+}
+
+.error-detail {
+    color: var(--muted);
+    font-size: 1rem;
+    margin: 0 0 30px 0;
+    line-height: 1.6;
+}
+
+.retry-btn {
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    padding: 12px 32px;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-family: 'Poppins', system-ui, Arial, sans-serif;
+}
+
+.retry-btn:hover {
+    background: #d43e15;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(233, 78, 27, 0.3);
+}
+
+.retry-btn:active {
+    transform: translateY(0);
+}
+
+.retry-icon {
+    font-size: 1.2rem;
+    display: inline-block;
+    transition: transform 0.3s ease;
+}
+
+.retry-btn:hover .retry-icon {
+    transform: rotate(180deg);
 }
 
 /* --- 8. DESKTOP MEDIA QUERY --- */
