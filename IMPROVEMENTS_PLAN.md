@@ -91,16 +91,18 @@ error: function(error) {
 
 ## Performance Optimizations
 
-### 4. Image Optimization Strategy [Done]
+### 4. Image Optimization Strategy [Reverted - Manual Approach]
 
-**What:** Implement WebP format with fallbacks and optimize image loading  
-**How:**
+**What:** Optimize images for faster loading  
+**Status:** Code was implemented but reverted. User will handle WebP conversion manually and use WebP URLs directly in CSV.
 
-- Use `<picture>` element with WebP source and JPEG fallback
-- Automatically detects WebP versions by converting image URLs
-- Falls back gracefully to original format if WebP unavailable
+**Current Implementation:**
 
-**Why:** WebP images are 25-35% smaller than JPEG, reducing load times and data usage, especially important for mobile users.
+- Images load directly from URLs in CSV (no automatic conversion)
+- Error handling with placeholder fallback remains
+- User converts images to WebP and uses WebP URLs in spreadsheet
+
+**Why:** WebP images are 25-35% smaller than JPEG, reducing load times and data usage, especially important for mobile users. Manual approach gives user full control over image optimization.
 
 **Implementation:**
 
@@ -150,7 +152,7 @@ self.addEventListener("install", (event) => {
 
 ## Accessibility Enhancements
 
-### 6. ARIA Labels and Semantic HTML
+### 6. ARIA Labels and Semantic HTML [Done]
 
 **What:** Improve screen reader support and keyboard navigation  
 **How:**
@@ -159,6 +161,7 @@ self.addEventListener("install", (event) => {
 - Add `aria-live="polite"` to menu container for dynamic updates
 - Ensure all interactive elements are keyboard accessible
 - Add skip-to-content link
+- Add ARIA labels to address and phone links
 
 **Why:** Makes the menu usable for people with disabilities, improves SEO, and ensures legal compliance with accessibility standards (ADA, WCAG).
 
@@ -178,7 +181,7 @@ self.addEventListener("install", (event) => {
 
 **Priority:** 🟡 High - Legal compliance and inclusivity
 
-### 7. Keyboard Navigation Improvements
+### 7. Keyboard Navigation Improvements [Done]
 
 **What:** Ensure all interactive elements are keyboard accessible  
 **How:**
@@ -186,6 +189,7 @@ self.addEventListener("install", (event) => {
 - Add visible focus indicators
 - Ensure tab order is logical
 - Add keyboard shortcuts (e.g., 'R' to refresh)
+- Smooth scroll behavior for skip links
 
 **Why:** Many users navigate with keyboards. Missing focus styles make navigation difficult or impossible.
 
@@ -590,36 +594,45 @@ html {
 
 ---
 
-## Implementation Priority Summary
+## Implementation Status Summary
 
-### Phase 1: Critical & High Priority (Do First)
+### ✅ Completed (7/27 improvements - 26%)
 
-1. ✅ Fix logo path mismatch
-2. ✅ Image loading error handling
-3. ✅ Enhanced CSV error handling
-4. ✅ ARIA labels and accessibility
-5. ✅ Keyboard navigation
-6. ✅ Color contrast verification
-7. ✅ Mobile-specific enhancements
-8. ✅ Input sanitization
+1. ✅ **Logo Path Mismatch** - Fixed broken logo reference
+2. ✅ **Image Loading Error Handling** - Added fallback placeholder images
+3. ✅ **Enhanced CSV Error Handling** - User-friendly errors with retry button
+4. ✅ **Service Worker for Offline Support** - Caching with stale-while-revalidate strategy
+5. ✅ **Update Notification System** - Visual notification when menu updates (bonus feature)
+6. ✅ **ARIA Labels and Semantic HTML** - Full screen reader support
+7. ✅ **Keyboard Navigation Improvements** - Focus indicators and shortcuts
 
-### Phase 2: Medium Priority (Do Next)
+### 🔄 In Progress / Modified
 
-9. Performance optimizations (WebP, service worker)
-10. SEO & social sharing meta tags
-11. Structured data
-12. Loading progress indicator
-13. Menu search/filter
-14. Category jump links
-15. Analytics integration
+4. 🔄 **Image Optimization** - Reverted to manual approach (user handles WebP conversion)
 
-### Phase 3: Low Priority (Nice to Have)
+### 📋 Remaining High Priority
 
-16. Print stylesheet
-17. Last updated timestamp
-18. Code quality improvements (JSDoc, constants)
-19. Visual polish enhancements
-20. Favicon and PWA support
+8. **Color Contrast Verification** - Audit and fix contrast ratios (WCAG AA compliance)
+9. **Mobile-Specific Enhancements** - Sticky call button, touch targets, swipe gestures
+10. **Input Sanitization** - Enhanced validation of CSV data
+
+### 📋 Remaining Medium Priority
+
+11. **SEO & Social Sharing Meta Tags** - Open Graph, Twitter Cards, descriptions
+12. **Structured Data (JSON-LD)** - Schema.org markup for local business
+13. **Loading Progress Indicator** - Show progress during CSV fetch
+14. **Menu Search/Filter** - Search functionality for menu items
+15. **Category Jump Links** - Navigation to jump to categories
+16. **Analytics Integration** - Track usage and performance
+
+### 📋 Remaining Low Priority
+
+17. **Print Stylesheet** - Print-optimized CSS
+18. **Last Updated Timestamp** - Display when menu was last updated
+19. **Code Quality Improvements** - JSDoc comments, extract constants
+20. **Visual Polish Enhancements** - Enhanced hover effects, smooth scroll
+21. **Favicon and PWA Support** - App icons and manifest
+22. **Browser Compatibility** - Test and add fallbacks for older browsers
 
 ---
 
@@ -636,15 +649,59 @@ html {
 
 ---
 
-## Notes
+## Implementation Notes
+
+### Testing Requirements
 
 - All improvements should be tested on multiple devices and browsers
-- Consider A/B testing for UX changes
-- Monitor analytics after implementing changes
+- Test service worker functionality (offline mode, cache updates)
+- Verify accessibility with screen readers (NVDA, JAWS, VoiceOver)
+- Test keyboard navigation on all interactive elements
+- Verify error states work correctly
+
+### Best Practices
+
 - Keep backup of current working version before major changes
 - Test with real Google Sheets data to ensure compatibility
+- Monitor service worker cache behavior in production
+- Consider A/B testing for UX changes
+- Monitor analytics after implementing changes
+
+### Known Issues / Decisions
+
+- **WebP Optimization**: Reverted automatic conversion. User will manually convert images to WebP and use WebP URLs directly in CSV spreadsheet.
+- **Service Worker**: Uses stale-while-revalidate strategy for CSV - serves cache immediately, updates in background
+- **Update Notifications**: Auto-dismiss after 10 seconds, can be manually dismissed
 
 ---
 
-**Last Updated:** 2024  
-**Status:** Proposed - Awaiting Approval
+## Progress Summary
+
+**Overall Progress:** 7 of 27 improvements completed (26%)
+
+**Completed Categories:**
+
+- ✅ Critical Fixes (1/1)
+- ✅ Functionality Improvements (2/2)
+- ✅ Performance Optimizations (1/2 - Service Worker done, WebP manual)
+- ✅ Accessibility Enhancements (2/3 - ARIA & Keyboard done, Color Contrast pending)
+
+**Key Achievements:**
+
+- Menu now works offline with service worker caching
+- Full keyboard and screen reader accessibility
+- Robust error handling with user-friendly messages
+- Automatic update notifications when menu changes
+- All images have fallback handling
+
+**Next Steps:**
+
+1. Color contrast audit (accessibility compliance)
+2. Mobile enhancements (sticky call button, touch optimization)
+3. SEO improvements (meta tags, structured data)
+4. User experience features (search, category navigation)
+
+---
+
+**Last Updated:** December 2024  
+**Status:** In Progress - 26% Complete

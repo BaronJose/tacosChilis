@@ -16,37 +16,6 @@
         return String(str).replace(/[&<>"]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[m]));
     }
 
-    /**
-     * Creates a WebP-optimized picture element with fallback
-     * @param {string} imgSrc - Original image URL
-     * @param {string} alt - Alt text for the image
-     * @param {string} className - CSS class name
-     * @returns {string} HTML string for picture element
-     */
-    function createOptimizedImage(imgSrc, alt, className) {
-        if (!imgSrc || imgSrc === placeholderImage) {
-            // For placeholder, just return simple img tag
-            return `<img loading="lazy" src="${escapeHtml(imgSrc)}" alt="${escapeHtml(alt)}" class="${className}" onerror="this.onerror=null; this.src='${placeholderImage}'">`;
-        }
-
-        // Try to create WebP version URL by replacing extension
-        // Handles: .jpg, .jpeg, .JPG, .JPEG, .png, .PNG
-        const webpSrc = imgSrc.replace(/\.(jpg|jpeg|JPG|JPEG|png|PNG)(\?.*)?$/i, '.webp$2');
-        
-        // If URL already ends with .webp, just use it directly
-        if (imgSrc.toLowerCase().endsWith('.webp')) {
-            return `<img loading="lazy" src="${escapeHtml(imgSrc)}" alt="${escapeHtml(alt)}" class="${className}" onerror="this.onerror=null; this.src='${placeholderImage}'">`;
-        }
-
-        // Create picture element with WebP source and original fallback
-        // Browser automatically falls back to img if source fails
-        return `
-            <picture>
-                <source srcset="${escapeHtml(webpSrc)}" type="image/webp">
-                <img loading="lazy" src="${escapeHtml(imgSrc)}" alt="${escapeHtml(alt)}" class="${className}" onerror="this.onerror=null; this.src='${placeholderImage}'">
-            </picture>
-        `;
-    }
 
     function showErrorState(error) {
         let errorMessage = 'Unable to load the menu.';
@@ -208,7 +177,7 @@
                 const groupImgSrc = group.image || placeholderImage; 
 
                 html += `<div class="menu-group">`;
-                html += createOptimizedImage(groupImgSrc, groupName, 'group-image');
+                html += `<img loading="lazy" src="${escapeHtml(groupImgSrc)}" alt="${escapeHtml(groupName)}" class="group-image" onerror="this.onerror=null; this.src='${placeholderImage}'">`;
                 html += `<div class="group-content">`;
                 html += `<h3 class="group-title">${escapeHtml(groupName)}</h3>`;
                 html += `<p class="group-description">${escapeHtml(group.description)}</p>`;
@@ -248,7 +217,7 @@
 
                     html += `
                         <div class="menu-image">
-                            ${createOptimizedImage(imgSrc, item.name, 'menu-item-img')}
+                            <img loading="lazy" src="${escapeHtml(imgSrc)}" alt="${escapeHtml(item.name)}" onerror="this.onerror=null; this.src='${placeholderImage}'">
                         </div>
                         <div class="menu-card">
                             <div class="menu-top">
@@ -269,6 +238,9 @@
 
         menuContainer.innerHTML = html;
         updateLayout(true);
+        
+        // Announce menu update to screen readers
+        menuContainer.setAttribute('aria-live', 'polite');
     }
 
     // This is the FADE-IN / FADE-OUT version
@@ -374,6 +346,27 @@
             loadMenuData();
         };
     }
+
+    // --- KEYBOARD SHORTCUTS ---
+    document.addEventListener('keydown', function(e) {
+        // Press 'R' key to refresh menu (when not typing in an input)
+        if (e.key === 'r' || e.key === 'R') {
+            const activeElement = document.activeElement;
+            const isInputFocused = activeElement && (
+                activeElement.tagName === 'INPUT' ||
+                activeElement.tagName === 'TEXTAREA' ||
+                activeElement.isContentEditable
+            );
+            
+            if (!isInputFocused && !e.ctrlKey && !e.metaKey && !e.altKey) {
+                e.preventDefault();
+                if (refreshBtn) {
+                    refreshBtn.focus();
+                    loadMenuData();
+                }
+            }
+        }
+    });
 
     let resizeTimer;
     let lastWindowWidth = window.innerWidth;

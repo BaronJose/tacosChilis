@@ -16,6 +16,10 @@
     box-sizing: border-box;
 }
 
+html {
+    scroll-behavior: smooth;
+}
+
 body {
     font-family: 'Poppins', system-ui, Arial, sans-serif;
     margin: 0;
@@ -23,6 +27,26 @@ body {
     color: var(--text);
     line-height: 1.5;
     background-image: url(https://www.transparenttextures.com/patterns/light-paper-fibers.png);
+}
+
+/* --- SKIP TO CONTENT LINK --- */
+.skip-link {
+    position: absolute;
+    top: -40px;
+    left: 0;
+    background: var(--accent);
+    color: #fff;
+    padding: 8px 16px;
+    text-decoration: none;
+    font-weight: 600;
+    z-index: 10000;
+    border-radius: 0 0 4px 0;
+}
+
+.skip-link:focus {
+    top: 0;
+    outline: 3px solid var(--yellow);
+    outline-offset: 2px;
 }
 
 #menu {
@@ -324,20 +348,13 @@ header .sub {
     flex-direction: column;
 }
 
-.group-image,
-.menu-group picture {
+.group-image {
     /* --- MODIFIED --- */
     width: 100%;
     height: auto; /* Let aspect-ratio control height */
     aspect-ratio: 16 / 9; /* Replaced fixed height */
-    display: block;
-}
-
-.group-image,
-.menu-group picture img {
-    width: 100%;
-    height: 100%;
     object-fit: cover;
+    display: block;
 }
 
 .group-content {
@@ -466,29 +483,41 @@ header .sub {
     background: #f6f0e8;
 }
 
-.menu-image picture,
 .menu-image img {
-    width: 100%;
-    height: 100%;
-    display: block;
-}
-
-.menu-image picture {
-    aspect-ratio: 4 / 3;
-}
-
-.menu-image img,
-.menu-image .menu-item-img {
     width: 100%;
     height: 100%; /* Fills the aspect-ratio container */
     object-fit: cover;
+    display: block;
     filter: saturate(1.1) contrast(1.05);
     transition: transform 0.3s ease-out;
 }
 
-.menu-item:hover .menu-image img,
-.menu-item:hover .menu-image picture img {
+.menu-item:hover .menu-image img {
     transform: scale(1.1);
+}
+
+/* --- KEYBOARD FOCUS INDICATORS --- */
+button:focus-visible,
+a:focus-visible,
+.retry-btn:focus-visible,
+.update-notification-content:focus-visible,
+.update-notification-close:focus-visible {
+    outline: 3px solid var(--accent);
+    outline-offset: 2px;
+    border-radius: 4px;
+}
+
+/* Remove default focus outline and use custom one */
+button:focus:not(:focus-visible),
+a:focus:not(:focus-visible) {
+    outline: none;
+}
+
+/* Ensure refresh button is keyboard accessible */
+#refreshMenuBtn:focus-visible {
+    outline: 3px solid var(--accent);
+    outline-offset: 3px;
+    border-radius: 8px;
 }
 
 .menu-card {
