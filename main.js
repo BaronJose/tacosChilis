@@ -87,13 +87,6 @@
                     setupAnnouncementRibbon(processedData.announcements);
                     updateLayout(true);
                     
-                    // Notify service worker to cache the CSV data
-                    if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
-                        navigator.serviceWorker.controller.postMessage({
-                            type: 'CACHE_CSV',
-                            url: url
-                        });
-                    }
                 } catch (processingError) {
                     showErrorState(new Error('Error processing menu data: ' + processingError.message));
                 }
@@ -379,35 +372,31 @@
 
     document.addEventListener('DOMContentLoaded', loadMenuData);
 
-    // --- SERVICE WORKER REGISTRATION ---
+    // --- SERVICE WORKER UNREGISTRATION ---
+    // Remove any existing service workers to ensure fresh data loads
     if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-            navigator.serviceWorker.register('/sw.js')
-                .then((registration) => {
-                    console.log('[Service Worker] Registered successfully:', registration.scope);
-                    
-                    // Check for updates periodically
-                    setInterval(() => {
-                        registration.update();
-                    }, 60 * 60 * 1000); // Check every hour
-                })
-                .catch((error) => {
-                    console.warn('[Service Worker] Registration failed:', error);
+        navigator.serviceWorker.getRegistrations().then((registrations) => {
+            for (let registration of registrations) {
+                registration.unregister().then((success) => {
+                    if (success) {
+                        console.log('[Service Worker] Unregistered successfully');
+                    }
                 });
-
-            // Listen for service worker updates
-            navigator.serviceWorker.addEventListener('controllerchange', () => {
-                console.log('[Service Worker] New service worker activated');
-            });
-
-            // Listen for messages from service worker about cache updates
-            navigator.serviceWorker.addEventListener('message', (event) => {
-                if (event.data && event.data.type === 'CSV_UPDATED') {
-                    console.log('[Service Worker] CSV cache updated - new menu data available');
-                    showUpdateNotification();
-                }
-            });
+            }
         });
+        
+        // Clear all caches
+        if ('caches' in window) {
+            caches.keys().then((cacheNames) => {
+                return Promise.all(
+                    cacheNames.map((cacheName) => {
+                        console.log('[Cache] Deleting cache:', cacheName);
+                        return caches.delete(cacheName);
+                    })
+                );
+            });
+        }
     }
+
 
 })();
