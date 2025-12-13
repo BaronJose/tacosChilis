@@ -280,57 +280,6 @@
         menuContainer.classList.toggle('is-desktop', isDesktop);
     }
 
-    function showUpdateNotification() {
-        const notification = document.getElementById('updateNotification');
-        if (!notification) return;
-
-        // Show notification with animation
-        notification.style.display = 'block';
-        setTimeout(() => {
-            notification.classList.add('is-visible');
-        }, 10);
-
-        // Make notification clickable to refresh
-        const notificationContent = notification.querySelector('.update-notification-content');
-        if (notificationContent) {
-            notificationContent.onclick = function(e) {
-                // Don't refresh if clicking the close button
-                if (e.target.classList.contains('update-notification-close')) {
-                    return;
-                }
-                // Refresh the page to show new menu
-                window.location.reload();
-            };
-        }
-
-        // Close button handler
-        const closeBtn = notification.querySelector('.update-notification-close');
-        if (closeBtn) {
-            closeBtn.onclick = function(e) {
-                e.stopPropagation();
-                hideUpdateNotification();
-            };
-        }
-
-        // Auto-hide after 10 seconds
-        setTimeout(() => {
-            hideUpdateNotification();
-        }, 10000);
-    }
-
-    function hideUpdateNotification() {
-        const notification = document.getElementById('updateNotification');
-        if (!notification) return;
-
-        notification.classList.remove('is-visible');
-        setTimeout(() => {
-            notification.style.display = 'none';
-        }, 300); // Wait for fade-out animation
-    }
-
-    function attachEventListeners() {
-        // No longer needed
-    }
 
     // --- INITIALIZATION ---
     if (refreshBtn) {
@@ -371,32 +320,6 @@
     });
 
     document.addEventListener('DOMContentLoaded', loadMenuData);
-
-    // --- SERVICE WORKER UNREGISTRATION ---
-    // Remove any existing service workers to ensure fresh data loads
-    if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.getRegistrations().then((registrations) => {
-            for (let registration of registrations) {
-                registration.unregister().then((success) => {
-                    if (success) {
-                        console.log('[Service Worker] Unregistered successfully');
-                    }
-                });
-            }
-        });
-        
-        // Clear all caches
-        if ('caches' in window) {
-            caches.keys().then((cacheNames) => {
-                return Promise.all(
-                    cacheNames.map((cacheName) => {
-                        console.log('[Cache] Deleting cache:', cacheName);
-                        return caches.delete(cacheName);
-                    })
-                );
-            });
-        }
-    }
 
 
 })();
